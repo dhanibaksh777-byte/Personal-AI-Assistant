@@ -1,0 +1,10 @@
+sqlalchemy
+groq 
+pydantic 
+uvicorn
+alembic
+FastApi
+psycopg2-binary
+tavly-python
+python-dotenv
+
