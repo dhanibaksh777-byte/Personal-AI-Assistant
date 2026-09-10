@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from tools.web_searches import web_search
 from models import ChatMessage,Conversation
 from sqlalchemy.dialects.postgresql import UUID
+import json
 import uuid
 
 SYSTEM_PROMPT = """You are a helpful personal assistant. You have access to a web search tool. 
@@ -37,30 +38,34 @@ def get_response(message : str,conversation_id : str,db : Session):
     messages = [{"role" : "system", "content" : SYSTEM_PROMPT}]
     for msg in history:
         messages.append({"role" : msg.role, "content" : msg.content})
-    messages.append({"role" : "user", "content" : message})
 
-    response = client.chat.completions.create(
+    response1 = client.chat.completions.create(
         model = "openai/gpt-oss-120b",
         messages=messages,
         tools=[web_search],
         reasoning_effort="low"
     )
 
-    tool_call = response.choices[0].message.tool_calls
+    tool_call = response1.choices[0].message.tool_calls
     if tool_call:
-        response = web_search(message)
-        return response
 
+        argument = json.loads(tool_call[0].function.arguments)
+        search_result = web_search(argument["query"])
+        messages.append({"role" : "tool" , "content" : search_result,"tool_call_id" : tool_call[0].id})
+
+        response2 = client.chat.completions.create(
+            model = "openai/gpt-oss-120b",
+            messages = messages
+        )
+        assistant_reply = response2.choices[0].message.content
+        save_assistant_message = ChatMessage(role = "assistant",content = assistant_reply,conversation_id = conversation_id)
+        db.add(save_assistant_message)
+        db.commit()
+        return assistant_reply
+        
     else:
-        return response.choices[0].message.content
-
-    save_message = Message(role = "user", content = message, conversation_id = conversation_id)
-    db.add()
-    db.commit()
-    return save_message
-
-
-    
-
-
-
+        assistant_reply = response1.choices[0].message.content
+        save_assistant_reply = ChatMessage(role = "assistant",content = assistant_reply,conversation_id = conversation_id)
+        db.add(save_assistant_reply)
+        db.commit()
+        return assistant_reply
