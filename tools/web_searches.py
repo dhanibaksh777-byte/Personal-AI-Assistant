@@ -11,5 +11,22 @@ if not api_key:
 def web_search(query : str):
     tavily_client = TavilyClient(api_key=api_key)
     response = tavily_client.search(query)
-    return response
+    return str(response["results"][0]["content"])
 
+web_search_tool = {
+    "type": "function",
+    "function": {
+        "name": "web_search",
+        "description": "Search the web for real-time information",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query"
+                }
+            },
+            "required": ["query"]
+        }
+    }
+}

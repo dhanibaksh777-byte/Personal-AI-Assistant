@@ -11,15 +11,14 @@ class Conversation(base):
     __tablename__ = "conversations"
     id = Column(UUID(as_uuid = True),primary_key = True, default = uuid.uuid4)
     created_at = Column(DateTime,default = datetime.now(timezone.utc))
-    messages = relationship("Message",back_populates="conversation")
+    messages = relationship("ChatMessage",back_populates="conversation")
 
 
-class Message(base):
-    __tablename__ = "messages"
+class  ChatMessage(base):
+    __tablename__ = "chat_messages"
     id = Column(UUID(as_uuid = True),primary_key=True,default = uuid.uuid4)
     role = Column(String())
     content = Column(String())
     created_at = Column(DateTime,default= datetime.now(timezone.utc))
-    conversation_id = Column(UUID(as_uuid=True,default = uuid.uuid4), ForeignKey("conversations.id"))
+    conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id"))
     conversation = relationship("Conversation",back_populates="messages")
-
