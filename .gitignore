@@ -1,0 +1,24 @@
+# Environment variables
+.env
+.env.example
+
+# Virtual environment
+.venv
+venv
+env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Alembic
+alembic/versions/*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
